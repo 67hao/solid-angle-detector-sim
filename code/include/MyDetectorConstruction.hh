@@ -58,6 +58,8 @@ private:
 	// Optional messenger for controlling geometry parameters at runtime
 	
 	G4double fSample_Detector_Distance;
+	G4String fSample_Material;
+	G4LogicalVolume* Sample_LV = nullptr;
 	
 	G4VPhysicalVolume* World_Phys = nullptr;
 

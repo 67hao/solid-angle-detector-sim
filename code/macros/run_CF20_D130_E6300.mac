@@ -1,0 +1,6 @@
+/DetectorConstruction/Sample_Material CF20
+/DetectorConstruction/Sample_Detector_Distance 130
+/DetectorConstruction/update
+/gun/energy 6300 keV
+/analysis/setFileName hist_CF20_D130_E6300
+/run/beamOn 1000000

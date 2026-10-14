@@ -1,4 +1,4 @@
-﻿#include <fstream>
+#include <fstream>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -34,50 +34,62 @@ int main() {
     master << "/control/verbose 2\n";
 
     // ------------------------------------------------------------------------
-    // Loop over distances and energies
+    // Materials list: S0 (nosample), CF10-CF50, S1-S8 (MAX phase)
     // ------------------------------------------------------------------------
-    for (double distance = min_distance; distance <= max_distance + 0.001; distance += step_distance) {
-        for (int energy : energies) {
+    std::vector<std::string> materials = {
+        "S0",
+        "CF10", "CF20", "CF30", "CF40", "CF50",
+        "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"
+    };
 
-            // Compute z position based on initial position + distance
-            double z_pos = initial_z + distance;
+    // ------------------------------------------------------------------------
+    // Loop over materials, distances, and energies
+    // ------------------------------------------------------------------------
+    for (const auto& mat : materials) {
+        for (double distance = min_distance; distance <= max_distance + 0.001; distance += step_distance) {
+            for (int energy : energies) {
 
-            // Format strings for filename
-            std::ostringstream ossD, ossE;
-            ossD << std::fixed << std::setprecision(0) << distance;
-            ossE << energy;
+                // Compute z position based on initial position + distance
+                double z_pos = initial_z + distance;
 
-            std::string D_str = ossD.str();
-            std::string E_str = ossE.str();
+                // Format strings for filename
+                std::ostringstream ossD, ossE;
+                ossD << std::fixed << std::setprecision(0) << distance;
+                ossE << energy;
 
-            // Filename for individual macro
-            std::string filename = "run_D" + D_str + "_E" + E_str + ".mac";
+                std::string D_str = ossD.str();
+                std::string E_str = ossE.str();
 
-            // ----------------------------------------------------------------
-            // Write macro file
-            // ----------------------------------------------------------------
-            std::ofstream macfile(std::string(MACROPATH) + "/" + filename);
-            if (!macfile) {
-                std::cerr << "=== File Generating Failed === " << filename << std::endl;
-                continue;
+                // Filename for individual macro
+                std::string filename = "run_" + mat + "_D" + D_str + "_E" + E_str + ".mac";
+
+                // ----------------------------------------------------------------
+                // Write macro file
+                // ----------------------------------------------------------------
+                std::ofstream macfile(std::string(MACROPATH) + "/" + filename);
+                if (!macfile) {
+                    std::cerr << "=== File Generating Failed === " << filename << std::endl;
+                    continue;
+                }
+
+                // Set sample material, distance, and update geometry
+                macfile << "/DetectorConstruction/Sample_Material " << mat << "\n";
+                macfile << "/DetectorConstruction/Sample_Detector_Distance " << distance << "\n";
+                macfile << "/DetectorConstruction/update\n";
+                macfile << "/gun/energy " << energy << " keV\n";
+
+                // -------------------- Histogram setup --------------------
+                macfile << "/analysis/setFileName hist_" << mat << "_D" << D_str << "_E" << E_str << "\n";
+
+                // Run events
+                macfile << "/run/beamOn 1000000\n";
+
+                macfile.close();
+
+                // Add macro to master macro
+                master << "/control/execute " << filename << "\n";
+                std::cout << "== Generated: " << filename << std::endl;
             }
-
-            // Set source-detector distance and position
-            macfile << "/DetectorConstruction/Sample_Detector_Distance " << distance << "\n";
-            macfile << "/DetectorConstruction/update\n";
-            macfile << "/gun/energy " << energy << " keV\n";
-
-            // -------------------- Histogram setup --------------------
-            macfile << "/analysis/setFileName hist_D" << D_str << "_E" << E_str << "\n";
-
-            // Run events
-            macfile << "/run/beamOn 1000000\n";
-
-            macfile.close();
-
-            // Add macro to master macro
-            master << "/control/execute " << filename << "\n";
-            std::cout << "== Generated: " << filename << std::endl;
         }
     }
 

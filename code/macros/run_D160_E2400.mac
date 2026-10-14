@@ -1,5 +1,0 @@
-/DetectorConstruction/Sample_Detector_Distance 160
-/DetectorConstruction/update
-/gun/energy 2400 keV
-/analysis/setFileName hist_D160_E2400
-/run/beamOn 1000000

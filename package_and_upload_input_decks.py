@@ -5,7 +5,7 @@ sys.path.insert(0, str(Path(r"C:\antigravity_goat\core")))
 import gdrive_helper
 
 PROJECT_DIR = Path(r"C:\antigravity_goat\2026.03.13_Advanced Solid Angle Detector")
-INPUT_DECKS_FOLDER_ID = "1t__GXG4lcVCsJfWAk5TC_w4dnMvoHeAo"
+INPUT_DECKS_FOLDER_ID = "1rF0ymc4KR-YN5kuodhlatVYPR63i6HzY"
 ZIP_PATH = PROJECT_DIR / "Input_Decks.zip"
 
 print(f">>> Packaging Input Decks into {ZIP_PATH}...")

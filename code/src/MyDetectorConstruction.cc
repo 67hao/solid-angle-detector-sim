@@ -1,4 +1,4 @@
-﻿// =========================================================================
+// =========================================================================
 // Header Definition
 // =========================================================================
 
@@ -99,11 +99,16 @@ namespace GEO {
 MyDetectorConstruction::MyDetectorConstruction() 
     : G4VUserDetectorConstruction(),
     fMessenger(nullptr),
-    fSample_Detector_Distance(200.0 * mm) // Default HDPE+hBN Layer Thickness
+    fSample_Detector_Distance(200.0 * mm), // Default HDPE+hBN Layer Thickness
+    fSample_Material("S0"),
+    Sample_LV(nullptr)
 {
     // Messenger for setting the volume fraction of hBN in the composite material
     fMessenger = new G4GenericMessenger(this, "/DetectorConstruction/", "Detector Construction Control");
-    auto& fSample_Detector_Distancecmd = fMessenger->DeclareProperty("Sample_Detector_Distance", fSample_Detector_Distance, "Set Sample_Detector_Distance");
+    fMessenger->DeclareProperty("Sample_Detector_Distance", fSample_Detector_Distance, "Set Sample_Detector_Distance");
+    fMessenger->DeclareProperty("Sample_Material", fSample_Material, "Set Sample Material");
+    fMessenger->DeclareProperty("material", fSample_Material, "Set Sample Material (alias)");
+    fMessenger->DeclareProperty("Material", fSample_Material, "Set Sample Material (alias)");
     fMessenger->DeclareMethod("update", &MyDetectorConstruction::UpdateGeometry, "Update geometry after parameter changes");
 
 }
@@ -128,6 +133,14 @@ void MyDetectorConstruction::DefineMaterials() {
     elRa->AddIsotope(Ra226, 100. * perCent);
     G4Material* matRa226 = new G4Material("Radium226", 5.5 * g / cm3, 1);
     matRa226->AddElement(elRa, 1);
+
+    // --- S0: nosample (G4_AIR) ---
+    if (!G4Material::GetMaterial("S0", false)) {
+        G4Material* air = NIST->FindOrBuildMaterial("G4_AIR");
+        G4Material* S0 = new G4Material("S0", air->GetDensity(), 1, kStateGas);
+        S0->AddMaterial(air, 100.0 * perCent);
+    }
+
     // --- Sample Material ---
 
     // Nguyên tố cho FeO2
@@ -141,43 +154,120 @@ void MyDetectorConstruction::DefineMaterials() {
     G4Material* matCement = NIST->FindOrBuildMaterial("G4_CONCRETE");
 
     // c. FeO2 (Giả định mật độ hạt bột là 5.0 g/cm3 để tính toán, không ảnh hưởng mật độ hỗn hợp sau này)
-    G4Material* matFeO2 = new G4Material("FeO2_Powder", 5.0 * g / cm3, 2);
-    matFeO2->AddElement(elFe, 1);
-    matFeO2->AddElement(elO, 2);
-    // Lưu ý: Nếu bạn muốn dùng Fe2O3 (Hematit), hãy sửa thành: AddElement(elFe, 2) và AddElement(elO, 3).
-
+    G4Material* matFeO2 = G4Material::GetMaterial("FeO2_Powder", false);
+    if (!matFeO2) {
+        matFeO2 = new G4Material("FeO2_Powder", 5.0 * g / cm3, 2);
+        matFeO2->AddElement(elFe, 1);
+        matFeO2->AddElement(elO, 2);
+    }
 
     // --- ĐỊNH NGHĨA CÁC VẬT LIỆU HỖN HỢP (CF10 -> CF50) ---
 
     // CF10: 45% Sand, 45% Cement, 10% FeO2 - Mật độ 2.19 g/cm3
-    G4Material* CF10 = new G4Material("CF10", 2.19 * g / cm3, 3);
-    CF10->AddMaterial(matSand, 45 * perCent);
-    CF10->AddMaterial(matCement, 45 * perCent);
-    CF10->AddMaterial(matFeO2, 10 * perCent);
+    if (!G4Material::GetMaterial("CF10", false)) {
+        G4Material* CF10 = new G4Material("CF10", 2.19 * g / cm3, 3);
+        CF10->AddMaterial(matSand, 45 * perCent);
+        CF10->AddMaterial(matCement, 45 * perCent);
+        CF10->AddMaterial(matFeO2, 10 * perCent);
+    }
 
     // CF20: 40% Sand, 40% Cement, 20% FeO2 - Mật độ 2.22 g/cm3
-    G4Material* CF20 = new G4Material("CF20", 2.22 * g / cm3, 3);
-    CF20->AddMaterial(matSand, 40 * perCent);
-    CF20->AddMaterial(matCement, 40 * perCent);
-    CF20->AddMaterial(matFeO2, 20 * perCent);
+    if (!G4Material::GetMaterial("CF20", false)) {
+        G4Material* CF20 = new G4Material("CF20", 2.22 * g / cm3, 3);
+        CF20->AddMaterial(matSand, 40 * perCent);
+        CF20->AddMaterial(matCement, 40 * perCent);
+        CF20->AddMaterial(matFeO2, 20 * perCent);
+    }
 
     // CF30: 35% Sand, 35% Cement, 30% FeO2 - Mật độ 2.26 g/cm3
-    G4Material* CF30 = new G4Material("CF30", 2.26 * g / cm3, 3);
-    CF30->AddMaterial(matSand, 35 * perCent);
-    CF30->AddMaterial(matCement, 35 * perCent);
-    CF30->AddMaterial(matFeO2, 30 * perCent);
+    if (!G4Material::GetMaterial("CF30", false)) {
+        G4Material* CF30 = new G4Material("CF30", 2.26 * g / cm3, 3);
+        CF30->AddMaterial(matSand, 35 * perCent);
+        CF30->AddMaterial(matCement, 35 * perCent);
+        CF30->AddMaterial(matFeO2, 30 * perCent);
+    }
 
     // CF40: 30% Sand, 30% Cement, 40% FeO2 - Mật độ 2.31 g/cm3
-    G4Material* CF40 = new G4Material("CF40", 2.31 * g / cm3, 3);
-    CF40->AddMaterial(matSand, 30 * perCent);
-    CF40->AddMaterial(matCement, 30 * perCent);
-    CF40->AddMaterial(matFeO2, 40 * perCent);
+    if (!G4Material::GetMaterial("CF40", false)) {
+        G4Material* CF40 = new G4Material("CF40", 2.31 * g / cm3, 3);
+        CF40->AddMaterial(matSand, 30 * perCent);
+        CF40->AddMaterial(matCement, 30 * perCent);
+        CF40->AddMaterial(matFeO2, 40 * perCent);
+    }
 
     // CF50: 25% Sand, 25% Cement, 50% FeO2 - Mật độ 2.53 g/cm3
-    G4Material* CF50 = new G4Material("CF50", 2.53 * g / cm3, 3);
-    CF50->AddMaterial(matSand, 25 * perCent);
-    CF50->AddMaterial(matCement, 25 * perCent);
-    CF50->AddMaterial(matFeO2, 50 * perCent);
+    if (!G4Material::GetMaterial("CF50", false)) {
+        G4Material* CF50 = new G4Material("CF50", 2.53 * g / cm3, 3);
+        CF50->AddMaterial(matSand, 25 * perCent);
+        CF50->AddMaterial(matCement, 25 * perCent);
+        CF50->AddMaterial(matFeO2, 50 * perCent);
+    }
+
+	// --- ĐỊNH NGHĨA 8 VẬT LIỆU MAX PHASE (S1 -> S8) ---
+
+	// [1]. S1: Ti2AlC
+	if (!G4Material::GetMaterial("S1", false)) {
+		G4Material* S1 = new G4Material("S1", 4.1 * g / cm3, 3);
+		S1->AddElement(NIST->FindOrBuildElement("Ti"), 0.7106);
+		S1->AddElement(NIST->FindOrBuildElement("Al"), 0.2003);
+		S1->AddElement(NIST->FindOrBuildElement("C"), 0.0892);
+	}
+
+	// [2]. S2: Ti2AlN
+	if (!G4Material::GetMaterial("S2", false)) {
+		G4Material* S2 = new G4Material("S2", 4.3 * g / cm3, 3);
+		S2->AddElement(NIST->FindOrBuildElement("Ti"), 0.7002);
+		S2->AddElement(NIST->FindOrBuildElement("Al"), 0.1974);
+		S2->AddElement(NIST->FindOrBuildElement("N"), 0.1025);
+	}
+
+	// [3]. S3: V2AlC
+	if (!G4Material::GetMaterial("S3", false)) {
+		G4Material* S3 = new G4Material("S3", 4.0 * g / cm3, 3);
+		S3->AddElement(NIST->FindOrBuildElement("V"), 0.7232);
+		S3->AddElement(NIST->FindOrBuildElement("Al"), 0.1915);
+		S3->AddElement(NIST->FindOrBuildElement("C"), 0.0853);
+	}
+
+	// [4]. S4: Cr2AlC
+	if (!G4Material::GetMaterial("S4", false)) {
+		G4Material* S4 = new G4Material("S4", 5.17 * g / cm3, 3);
+		S4->AddElement(NIST->FindOrBuildElement("Cr"), 0.7273);
+		S4->AddElement(NIST->FindOrBuildElement("Al"), 0.1887);
+		S4->AddElement(NIST->FindOrBuildElement("C"), 0.0840);
+	}
+
+	// [5]. S5: Nb2AlC
+	if (!G4Material::GetMaterial("S5", false)) {
+		G4Material* S5 = new G4Material("S5", 6.44 * g / cm3, 3);
+		S5->AddElement(NIST->FindOrBuildElement("Nb"), 0.8265);
+		S5->AddElement(NIST->FindOrBuildElement("Al"), 0.1200);
+		S5->AddElement(NIST->FindOrBuildElement("C"), 0.0534);
+	}
+
+	// [6]. S6: Ta2AlC
+	if (!G4Material::GetMaterial("S6", false)) {
+		G4Material* S6 = new G4Material("S6", 11.46 * g / cm3, 3);
+		S6->AddElement(NIST->FindOrBuildElement("Ta"), 0.9027);
+		S6->AddElement(NIST->FindOrBuildElement("Al"), 0.0673);
+		S6->AddElement(NIST->FindOrBuildElement("C"), 0.0300);
+	}
+
+	// [7]. S7: Ti3SiC2
+	if (!G4Material::GetMaterial("S7", false)) {
+		G4Material* S7 = new G4Material("S7", 4.5 * g / cm3, 3);
+		S7->AddElement(NIST->FindOrBuildElement("Ti"), 0.7338);
+		S7->AddElement(NIST->FindOrBuildElement("Si"), 0.1435);
+		S7->AddElement(NIST->FindOrBuildElement("C"), 0.1228);
+	}
+
+	// [8]. S8: Ti3AlC2
+	if (!G4Material::GetMaterial("S8", false)) {
+		G4Material* S8 = new G4Material("S8", 4.21 * g / cm3, 3);
+		S8->AddElement(NIST->FindOrBuildElement("Ti"), 0.7379);
+		S8->AddElement(NIST->FindOrBuildElement("Al"), 0.1387);
+		S8->AddElement(NIST->FindOrBuildElement("C"), 0.1235);
+	}
 }
 
 // =========================================================================
@@ -243,10 +333,18 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct() {
     G4LogicalVolume* Lead_LV = new G4LogicalVolume(Lead_Cylinder, NIST->FindMaterial("G4_Pb"), "Lead_LV");
     new G4PVPlacement(nullptr, G4ThreeVector(0, 0, Lead_PosZ), Lead_LV, "Lead", World_LV, false, 0, true);
 
-    // --- 6. Concrete Sample ---
+    // --- 6. Concrete / MAX Phase Sample ---
 	G4double Sample_PosZ = GEO::Solid_Alu_Height + fSample_Detector_Distance;
 	G4Tubs* Solid_Sample = new G4Tubs("Sample_Cylinder", 0, GEO::Sample_Radius, GEO::Sample_Height / 2, 0 * deg, 360 * deg);
-	G4LogicalVolume* Sample_LV = new G4LogicalVolume(Solid_Sample, NIST->FindOrBuildMaterial("CF10"), "Sample_LV");
+    G4Material* matSample = G4Material::GetMaterial(fSample_Material, false);
+    if (!matSample) {
+        matSample = NIST->FindOrBuildMaterial(fSample_Material);
+    }
+    if (!matSample) {
+        G4cout << "[WARNING] Material '" << fSample_Material << "' not found, defaulting to S0 (G4_AIR)!" << G4endl;
+        matSample = G4Material::GetMaterial("S0", false);
+    }
+	Sample_LV = new G4LogicalVolume(Solid_Sample, matSample, "Sample_LV");
 	new G4PVPlacement(nullptr, G4ThreeVector(0, 0, Sample_PosZ), Sample_LV, "Sample", World_LV, false, 0, true);
 
     // --- 7. Lead Collimator ---
@@ -312,20 +410,34 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct() {
     G4cout << "\n================ MyDetectorConstruction.cc ================\n";
 	G4cout << "\n================ Geometry Summary ================\n";
 	G4cout << " Source-Detector Distance: " << fSample_Detector_Distance / mm << " mm\n";
-    G4cout << " Source Z Position: " << Source_PosZ / mm << " mm\n";
+    G4cout << " Source Z Position:        " << Source_PosZ / mm << " mm\n";
+    G4cout << " Sample Material:          " << fSample_Material << "\n";
 	G4cout << "=================================================\n\n";
-
 
     return World_Phys;
 }
 
 void MyDetectorConstruction::UpdateGeometry() {
     auto runManager = G4RunManager::GetRunManager();
+    
+    // Update sample material if Sample_LV exists
+    if (Sample_LV) {
+        G4Material* matSample = G4Material::GetMaterial(fSample_Material, false);
+        if (!matSample) {
+            matSample = G4NistManager::Instance()->FindOrBuildMaterial(fSample_Material);
+        }
+        if (matSample) {
+            Sample_LV->SetMaterial(matSample);
+        }
+    }
+
     runManager->ReinitializeGeometry();         // rebuild geometry
     ConstructSDandField();                      // <--- reattach SDs manually
     // Print updated parameters
 	G4cout << "\n================ Updated Geometry ================\n";
 	G4cout << " Source-Detector Distance: " << fSample_Detector_Distance / mm << " mm\n";
+	G4cout << " Sample Material:          " << fSample_Material << "\n";
+	G4cout << "==================================================\n\n";
 }
 
 // =========================================================================

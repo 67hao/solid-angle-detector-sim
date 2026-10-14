@@ -1,0 +1,6 @@
+/DetectorConstruction/Sample_Material S7
+/DetectorConstruction/Sample_Detector_Distance 100
+/DetectorConstruction/update
+/gun/energy 7900 keV
+/analysis/setFileName hist_S7_D100_E7900
+/run/beamOn 1000000

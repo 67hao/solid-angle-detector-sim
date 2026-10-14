@@ -1,0 +1,6 @@
+/DetectorConstruction/Sample_Material CF50
+/DetectorConstruction/Sample_Detector_Distance 170
+/DetectorConstruction/update
+/gun/energy 1500 keV
+/analysis/setFileName hist_CF50_D170_E1500
+/run/beamOn 1000000

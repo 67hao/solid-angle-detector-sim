@@ -29,7 +29,7 @@ def parse_args():
     parser.add_argument("--runner-id", type=int, required=True, help="ID runner (1..10)")
     parser.add_argument("--num-runners", type=int, default=10, help="Tong so runner tren account nay")
     parser.add_argument("--primaries", type=int, default=1000000, help="So hat moi job")
-    parser.add_argument("--gdrive-folder", type=str, default="1PtrPFNFMlmaC5t3OYAFQFlQOtTAWHags")
+    parser.add_argument("--gdrive-folder", type=str, default="1qfxkPimTdKyNEZPZ8TZP79YpdSbKUs1R")
     parser.add_argument("--plan-file", type=str, default="solid_angle_plan_14acc.json")
     parser.add_argument("--github-user", type=str, default=None)
     parser.add_argument("--sim-bin", type=str, default=None)
@@ -207,8 +207,10 @@ def main():
 
         print(f"    [PARSED] Events: {events_simulated:,} | Edep: {edep_mev:.6e} MeV | Pulse: {pulse_count:.0f}")
 
+        sample = job.get("sample", jname.split("_")[0])
         row = {
             "job_name": jname,
+            "sample": sample,
             "distance_mm": distance_mm,
             "energy_kev": energy_kev,
             "primaries": events_simulated,
@@ -228,21 +230,34 @@ def main():
             except Exception as e:
                 print(f"    ⚠️ Loi upload {target_csv_name}: {e}")
 
-        # Check for root output
-        matches = list(Path.cwd().glob("*.root")) + list(Path("build").glob("*.root"))
-        for m in matches:
-            if m not in generated_roots:
-                generated_roots.append(m)
+        # Upload ROOT output directly to 03_Simulation_Outputs (Flat ROOT file, NO ZIP)
+        root_candidates = [
+            Path(f"hist_{jname}.root"),
+            Path("build") / f"hist_{jname}.root",
+            Path(f"{jname}.root"),
+            Path("build") / f"{jname}.root"
+        ]
+        job_root_file = None
+        for rc in root_candidates:
+            if rc.exists():
+                job_root_file = rc
+                break
+        if not job_root_file:
+            for rf in list(Path.cwd().glob("*.root")) + list(Path("build").glob("*.root")):
+                if jname.lower() in rf.name.lower():
+                    job_root_file = rf
+                    break
 
-    # 4. Pack and upload child outputs to 03_Simulation_Outputs
-    if generated_roots and drive_service and outputs_folder_id:
-        zip_name = f"outputs_{acc_name}_runner_{args.runner_id:02d}.zip"
-        print(f"\n>>> [ZIP] Dong goi {len(generated_roots)} root files vao {zip_name}...")
-        with zipfile.ZipFile(zip_name, "w", zipfile.ZIP_DEFLATED) as z:
-            for rf in generated_roots:
-                z.write(rf, arcname=rf.name)
-        gdrive_helper.upload_file_to_folder(drive_service, zip_name, outputs_folder_id)
-        print(f"    ✅ Uploaded {zip_name} -> 03_Simulation_Outputs")
+        if job_root_file and drive_service and outputs_folder_id:
+            try:
+                gdrive_helper.upload_file_to_folder(drive_service, str(job_root_file), outputs_folder_id)
+                print(f"    ✅ Uploaded {job_root_file.name} -> 03_Simulation_Outputs (Direct Flat ROOT)")
+                try:
+                    job_root_file.unlink()
+                except Exception:
+                    pass
+            except Exception as e:
+                print(f"    ⚠️ Loi upload root file {job_root_file.name}: {e}")
 
     print("\n" + "=" * 80)
     print(f"🎉 RUNNER #{args.runner_id} HOAN TAT MO PHONG!")

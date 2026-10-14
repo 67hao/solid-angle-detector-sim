@@ -1,0 +1,6 @@
+/DetectorConstruction/Sample_Material S3
+/DetectorConstruction/Sample_Detector_Distance 160
+/DetectorConstruction/update
+/gun/energy 1000 keV
+/analysis/setFileName hist_S3_D160_E1000
+/run/beamOn 1000000

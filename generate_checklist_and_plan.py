@@ -7,28 +7,36 @@ CHECKLIST_FILE = Path(r"C:\antigravity_goat\checklist_solid_angle.csv")
 STATE_FILE = Path(r"C:\antigravity_goat\control_center\projects_state.json")
 OUTPUT_PLAN = PROJECT_DIR / "solid_angle_plan_14acc.json"
 
+materials = [
+    "S0",
+    "CF10", "CF20", "CF30", "CF40", "CF50",
+    "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"
+]
+
 distances = list(range(100, 201, 10))
 energies = list(range(100, 10001, 100))
 
 rows = []
-for d in distances:
-    for e in energies:
-        job_name = f"D{d}_E{e}"
-        macro_name = f"run_D{d}_E{e}.mac"
-        rows.append({
-            "job_name": job_name,
-            "distance_mm": d,
-            "energy_kev": e,
-            "macro_file": macro_name,
-            "primaries": 1000000
-        })
+for mat in materials:
+    for d in distances:
+        for e in energies:
+            job_name = f"{mat}_D{d}_E{e}"
+            macro_name = f"run_{mat}_D{d}_E{e}.mac"
+            rows.append({
+                "job_name": job_name,
+                "sample": mat,
+                "distance_mm": d,
+                "energy_kev": e,
+                "macro_file": macro_name,
+                "primaries": 1000000
+            })
 
 df = pd.DataFrame(rows)
 df.to_csv(CHECKLIST_FILE, index=False)
 df.to_csv(PROJECT_DIR / "checklist_solid_angle.csv", index=False)
-print(f">>> Tong so jobs trong checklist: {len(df)}")
+print(f">>> Tong so jobs trong checklist: {len(df):,}")
 
-# Phan phoi ma tran len 13 active accounts x 10 runners = 130 runners
+# Read all active accounts
 with open(STATE_FILE, "r", encoding="utf-8") as f:
     state = json.load(f)
 
@@ -50,6 +58,7 @@ for idx, row in df.iterrows():
     acc, r_id = slots[idx % num_slots]
     plan[acc][r_id].append({
         "job_name": row["job_name"],
+        "sample": row["sample"],
         "distance_mm": int(row["distance_mm"]),
         "energy_kev": int(row["energy_kev"]),
         "macro_file": row["macro_file"],

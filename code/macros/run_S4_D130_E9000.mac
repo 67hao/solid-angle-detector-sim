@@ -1,0 +1,6 @@
+/DetectorConstruction/Sample_Material S4
+/DetectorConstruction/Sample_Detector_Distance 130
+/DetectorConstruction/update
+/gun/energy 9000 keV
+/analysis/setFileName hist_S4_D130_E9000
+/run/beamOn 1000000
