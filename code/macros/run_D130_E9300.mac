@@ -1,0 +1,5 @@
+/DetectorConstruction/Sample_Detector_Distance 130
+/DetectorConstruction/update
+/gun/energy 9300 keV
+/analysis/setFileName hist_D130_E9300
+/run/beamOn 1000000
