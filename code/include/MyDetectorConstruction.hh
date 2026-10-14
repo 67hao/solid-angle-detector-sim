@@ -1,4 +1,4 @@
-﻿// ============================================================================
+// ============================================================================
 // MyDetectorConstruction.hh
 // Definition of the MyDetectorConstruction class
 //
@@ -54,7 +54,7 @@ public:
 	void ConstructSDandField() override;
 
 private:
-	void MyDetectorConstruction::UpdateGeometry();
+	void UpdateGeometry();
 	// Optional messenger for controlling geometry parameters at runtime
 	
 	G4double fSample_Detector_Distance;
