@@ -35,11 +35,9 @@ jobs:
           curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xj bin/micromamba -O > /tmp/micromamba
           chmod +x /tmp/micromamba
 
-          echo ">>> [INSTALL] Installing Geant4 via micromamba..."
           /tmp/micromamba create -y -p /tmp/g4_env -c conda-forge \
-            geant4 geant4-data-g4ndl geant4-data-g4emlow \
-            expat zlib freetype cmake make gxx_linux-64 \
-            python=3.11 pandas numpy \
+            geant4 expat zlib freetype cmake make gxx_linux-64 \
+            python=3.11 pandas numpy openpyxl \
             google-api-python-client google-auth-httplib2 google-auth-oauthlib
 
       - name: Compile Geant4 Simulation
