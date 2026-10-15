@@ -85,7 +85,7 @@ jobs:
             --num-runners 10 \
             --primaries ${{ github.event.inputs.primaries }} \
             --gdrive-folder "${{ github.event.inputs.gdrive_folder }}" \
-            --plan-file "solid_angle_ver2_plan_18acc.json" \
+            --plan-file "solid_angle_ver2_plan_round2.json" \
             --github-user "${{ github.repository_owner }}" \
             --sim-bin "./build/Sim" \
             --timeout-hours 4.0
