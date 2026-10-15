@@ -1,0 +1,11 @@
+/control/verbose 0
+/run/verbose 0
+/event/verbose 0
+/tracking/verbose 0
+/DetectorConstruction/Sample_Material S6
+/DetectorConstruction/Sample_Thickness 0.005000 cm
+/DetectorConstruction/update
+/gun/particle neutron
+/gun/energy 0.5 eV
+/analysis/setFileName hist_S6_neutron_D0p005_E0p0005
+/run/beamOn 1000000

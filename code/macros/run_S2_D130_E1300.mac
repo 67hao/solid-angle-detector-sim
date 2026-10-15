@@ -1,6 +1,0 @@
-/DetectorConstruction/Sample_Material S2
-/DetectorConstruction/Sample_Detector_Distance 130
-/DetectorConstruction/update
-/gun/energy 1300 keV
-/analysis/setFileName hist_S2_D130_E1300
-/run/beamOn 1000000

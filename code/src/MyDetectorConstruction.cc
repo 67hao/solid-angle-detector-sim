@@ -100,12 +100,15 @@ MyDetectorConstruction::MyDetectorConstruction()
     : G4VUserDetectorConstruction(),
     fMessenger(nullptr),
     fSample_Detector_Distance(200.0 * mm), // Default HDPE+hBN Layer Thickness
+    fSample_Thickness(0.5 * cm),           // Default Sample Thickness = 0.5 cm (5.0 mm)
     fSample_Material("S0"),
     Sample_LV(nullptr)
 {
     // Messenger for setting the volume fraction of hBN in the composite material
     fMessenger = new G4GenericMessenger(this, "/DetectorConstruction/", "Detector Construction Control");
     fMessenger->DeclareProperty("Sample_Detector_Distance", fSample_Detector_Distance, "Set Sample_Detector_Distance");
+    fMessenger->DeclarePropertyWithUnit("Sample_Thickness", "cm", fSample_Thickness, "Set Sample Thickness");
+    fMessenger->DeclareProperty("thickness", fSample_Thickness, "Set Sample Thickness (alias)");
     fMessenger->DeclareProperty("Sample_Material", fSample_Material, "Set Sample Material");
     fMessenger->DeclareProperty("material", fSample_Material, "Set Sample Material (alias)");
     fMessenger->DeclareProperty("Material", fSample_Material, "Set Sample Material (alias)");
@@ -335,7 +338,8 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct() {
 
     // --- 6. Concrete / MAX Phase Sample ---
 	G4double Sample_PosZ = GEO::Solid_Alu_Height + fSample_Detector_Distance;
-	G4Tubs* Solid_Sample = new G4Tubs("Sample_Cylinder", 0, GEO::Sample_Radius, GEO::Sample_Height / 2, 0 * deg, 360 * deg);
+	G4double actual_thickness = (fSample_Thickness > 0.0) ? fSample_Thickness : 0.001 * mm;
+	G4Tubs* Solid_Sample = new G4Tubs("Sample_Cylinder", 0, GEO::Sample_Radius, actual_thickness / 2, 0 * deg, 360 * deg);
     G4Material* matSample = G4Material::GetMaterial(fSample_Material, false);
     if (!matSample) {
         matSample = NIST->FindOrBuildMaterial(fSample_Material);
@@ -436,6 +440,7 @@ void MyDetectorConstruction::UpdateGeometry() {
     // Print updated parameters
 	G4cout << "\n================ Updated Geometry ================\n";
 	G4cout << " Source-Detector Distance: " << fSample_Detector_Distance / mm << " mm\n";
+	G4cout << " Sample Thickness:         " << fSample_Thickness / cm << " cm (" << fSample_Thickness / mm << " mm)\n";
 	G4cout << " Sample Material:          " << fSample_Material << "\n";
 	G4cout << "==================================================\n\n";
 }

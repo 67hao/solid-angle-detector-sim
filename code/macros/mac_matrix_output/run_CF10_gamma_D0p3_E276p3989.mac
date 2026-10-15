@@ -1,0 +1,11 @@
+/control/verbose 0
+/run/verbose 0
+/event/verbose 0
+/tracking/verbose 0
+/DetectorConstruction/Sample_Material CF10
+/DetectorConstruction/Sample_Thickness 0.300000 cm
+/DetectorConstruction/update
+/gun/particle gamma
+/gun/energy 276.3989 keV
+/analysis/setFileName hist_CF10_gamma_D0p3_E276p3989
+/run/beamOn 1000000

@@ -1,6 +1,0 @@
-/DetectorConstruction/Sample_Material S8
-/DetectorConstruction/Sample_Detector_Distance 110
-/DetectorConstruction/update
-/gun/energy 10000 keV
-/analysis/setFileName hist_S8_D110_E10000
-/run/beamOn 1000000

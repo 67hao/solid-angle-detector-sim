@@ -1,0 +1,12 @@
+python pivot_uncollided.py process_results.csv
+chmod +x run_all_isolated.sh
+./run_all_isolated.sh
+
+# 1. Chay Gamma truyen thong (mac dinh la gamma, don vi keV):
+python gen_mac.py data.xlsx --outdir ./mac_output --particle gamma --unit keV --beamon 100000000
+
+# 2. Chay Neutron nhanh (vi du don vi MeV hoac keV):
+python gen_mac.py data.xlsx --outdir ./mac_output_neutron --particle neutron --unit MeV --beamon 100000000
+
+# 3. Chay Neutron Nhiet (Thermal Neutron - tu dong set particle=neutron va don vi eV/meV):
+python gen_mac.py data.xlsx --outdir ./mac_output_thermal --thermal --beamon 100000000

@@ -1,6 +1,0 @@
-/DetectorConstruction/Sample_Material S2
-/DetectorConstruction/Sample_Detector_Distance 170
-/DetectorConstruction/update
-/gun/energy 5100 keV
-/analysis/setFileName hist_S2_D170_E5100
-/run/beamOn 1000000

@@ -1,0 +1,11 @@
+/control/verbose 0
+/run/verbose 0
+/event/verbose 0
+/tracking/verbose 0
+/DetectorConstruction/Sample_Material CF50
+/DetectorConstruction/Sample_Thickness 0.200000 cm
+/DetectorConstruction/update
+/gun/particle gamma
+/gun/energy 40.117 keV
+/analysis/setFileName hist_CF50_gamma_D0p2_E40p117
+/run/beamOn 1000000

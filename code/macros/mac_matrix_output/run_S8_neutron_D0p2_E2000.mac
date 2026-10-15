@@ -1,0 +1,11 @@
+/control/verbose 0
+/run/verbose 0
+/event/verbose 0
+/tracking/verbose 0
+/DetectorConstruction/Sample_Material S8
+/DetectorConstruction/Sample_Thickness 0.200000 cm
+/DetectorConstruction/update
+/gun/particle neutron
+/gun/energy 2 MeV
+/analysis/setFileName hist_S8_neutron_D0p2_E2000
+/run/beamOn 1000000

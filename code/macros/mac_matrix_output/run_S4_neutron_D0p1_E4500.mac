@@ -1,0 +1,11 @@
+/control/verbose 0
+/run/verbose 0
+/event/verbose 0
+/tracking/verbose 0
+/DetectorConstruction/Sample_Material S4
+/DetectorConstruction/Sample_Thickness 0.100000 cm
+/DetectorConstruction/update
+/gun/particle neutron
+/gun/energy 4.5 MeV
+/analysis/setFileName hist_S4_neutron_D0p1_E4500
+/run/beamOn 1000000

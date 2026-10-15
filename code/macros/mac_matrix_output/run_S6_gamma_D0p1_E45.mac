@@ -1,0 +1,11 @@
+/control/verbose 0
+/run/verbose 0
+/event/verbose 0
+/tracking/verbose 0
+/DetectorConstruction/Sample_Material S6
+/DetectorConstruction/Sample_Thickness 0.100000 cm
+/DetectorConstruction/update
+/gun/particle gamma
+/gun/energy 45 keV
+/analysis/setFileName hist_S6_gamma_D0p1_E45
+/run/beamOn 1000000

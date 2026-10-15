@@ -1,6 +1,0 @@
-/DetectorConstruction/Sample_Material CF10
-/DetectorConstruction/Sample_Detector_Distance 100
-/DetectorConstruction/update
-/gun/energy 800 keV
-/analysis/setFileName hist_CF10_D100_E800
-/run/beamOn 1000000

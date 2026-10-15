@@ -1,0 +1,11 @@
+/control/verbose 0
+/run/verbose 0
+/event/verbose 0
+/tracking/verbose 0
+/DetectorConstruction/Sample_Material CF40
+/DetectorConstruction/Sample_Thickness 0.100000 cm
+/DetectorConstruction/update
+/gun/particle neutron
+/gun/energy 14.1 MeV
+/analysis/setFileName hist_CF40_neutron_D0p1_E14100
+/run/beamOn 1000000

@@ -1,0 +1,156 @@
+====================================================================================================
+               HƯỚNG DẪN VẬN HÀNH HỆ THỐNG MÔ PHỎNG GEANT4 VÀ CHẠY MA TRẬN MACRO
+                       Dự án: 2026.03.13_Advanced Solid Angle Detector_ver2
+                  Hỗ trợ: Chùm bức xạ Gamma (EpiXS 196 mốc) & Neutron (19 mốc)
+====================================================================================================
+
+1. TỔNG QUAN HỆ THỐNG VÀ CẤU TRÚC THƯ MỤC
+----------------------------------------------------------------------------------------------------
+- Thư mục gốc mã nguồn : C:\antigravity_goat\2026.03.13_Advanced Solid Angle Detector_ver2\code
+- File thực thi (Binary): code\build\Release\Sim.exe
+- Script sinh macro     : code\macros\generate_full_matrix_macros.py
+- Thư mục chứa macro   : code\macros\mac_matrix_output\ (chứa 18,060 file macro đơn lẻ và nhóm)
+- File tra cứu ma trận : code\macros\mac_matrix_output\energy_matrix_manifest.csv
+- Script phân tích ROOT: code\macros\Count.cc
+
+----------------------------------------------------------------------------------------------------
+2. QUY ƯỚC ĐẶT TÊN FILE MACRO VÀ FILE ROOT OUTPUT (1-to-1 Matrix Architecture)
+----------------------------------------------------------------------------------------------------
+Mỗi lượt chạy mô phỏng tương ứng 1 file macro (.mac) và sinh ra 1 file ROOT (.root) tương ứng.
+Tên file tuân thủ nghiêm ngặt quy ước phân tách token của Count.cc:
+
+A. CHÙM GAMMA:
+   - File Macro : run_{Mẫu}_gamma_D{Bề_dày}_E{Năng_lượng}.mac
+   - File ROOT  : hist_{Mẫu}_gamma_D{Bề_dày}_E{Năng_lượng}.root
+   * Ví dụ:
+     + run_CF10_gamma_D0.100_E661.700.mac   --> hist_CF10_gamma_D0.100_E661.700.root
+     + run_S0_gamma_D0.500_E122.100.mac     --> hist_S0_gamma_D0.500_E122.100.root (Blank Air)
+     + run_S1_gamma_D0.005_E8.980.mac       --> hist_S1_gamma_D0.005_E8.980.root (Baseline siêu mỏng)
+
+B. CHÙM NEUTRON:
+   - File Macro : run_{Mẫu}_neutron_D{Bề_dày}_E{Năng_lượng}.mac
+   - File ROOT  : hist_{Mẫu}_neutron_D{Bề_dày}_E{Năng_lượng}.root
+   * Ví dụ:
+     + run_CF10_neutron_D0.100_E0.0253eV.mac  --> hist_CF10_neutron_D0.100_E0.0253eV.root (Nhiệt)
+     + run_CF10_neutron_D0.100_E2.000MeV.mac  --> hist_CF10_neutron_D0.100_E2.000MeV.root (Nhanh)
+     + run_S8_neutron_D0.300_E14.100MeV.mac   --> hist_S8_neutron_D0.300_E14.100MeV.root (14.1 MeV)
+
+* Danh sách mẫu vật liệu (14 mẫu):
+  - Mẫu trắng (Blank): S0 (Không khí/Air) -> Dùng để tính thông lượng tới ban đầu I0.
+  - Chuỗi mẫu CF     : CF10, CF20, CF30, CF40, CF50.
+  - Chuỗi mẫu S      : S1, S2, S3, S4, S5, S6, S7, S8.
+
+* Danh sách bề dày (6 mức):
+  - D0.005 (0.005 cm): Mẫu chuẩn siêu mỏng (Baseline) để tính MAC chuẩn khi mẫu dày bị cản 100%.
+  - D0.100, D0.200, D0.300, D0.400, D0.500 (0.1, 0.2, 0.3, 0.4, 0.5 cm).
+
+----------------------------------------------------------------------------------------------------
+3. HƯỚNG DẪN CHẠY MÔ PHỎNG VỚI SIM.EXE
+----------------------------------------------------------------------------------------------------
+
+CÁCH 1: CHẠY KIỂM THỬ ĐƠN LẺ 1 FILE MACRO (Test Run)
+   Mở terminal PowerShell và thực hiện:
+   ---------------------------------------------------------------------------------
+   cd "C:\antigravity_goat\2026.03.13_Advanced Solid Angle Detector_ver2\code\build\Release"
+   .\Sim.exe "..\..\macros\mac_matrix_output\run_CF10_gamma_D0.100_E661.700.mac"
+   ---------------------------------------------------------------------------------
+   Kết quả file ROOT sẽ tự động được ghi ra thư mục chạy hiện hành (Release/):
+   hist_CF10_gamma_D0.100_E661.700.root
+
+CÁCH 2: CHẠY THEO MẪU VẬT LIỆU (Master Sample Macro)
+   Trong thư mục mac_matrix_output đã có sẵn các file Master gom toàn bộ năng lượng & bề dày của 1 mẫu:
+   - master_sample_S0.mac     (Mẫu Blank Air - Chạy trước tiên để lấy I0 cho mọi mốc)
+   - master_sample_CF10.mac   (Toàn bộ mốc Gamma & Neutron của mẫu CF10)
+   - master_sample_CF20.mac ... master_sample_S8.mac
+   Lệnh chạy:
+   ---------------------------------------------------------------------------------
+   cd "C:\antigravity_goat\2026.03.13_Advanced Solid Angle Detector_ver2\code\build\Release"
+   .\Sim.exe "..\..\macros\mac_matrix_output\master_sample_CF10.mac"
+   ---------------------------------------------------------------------------------
+
+CÁCH 3: CHẠY THEO NHÓM BỀ DÀY VÀ DẢI NĂNG LƯỢNG (Group Macro)
+   Hệ thống cung cấp sẵn các nhóm file để chạy phân đoạn:
+   - group_gamma_D0.100_low.mac      (Gamma vùng siêu thấp 1-80 keV, dày 0.1 cm)
+   - group_gamma_D0.100_edges.mac    (Gamma vùng bờ hấp thụ Cu/Pb)
+   - group_gamma_D0.100_epixs.mac    (Gamma các vạch đồng vị phóng xạ EpiXS)
+   - group_neutron_D0.100_thermal.mac(Neutron nhiệt)
+   - group_neutron_D0.100_fast.mac   (Neutron nhanh)
+   Lệnh chạy:
+   ---------------------------------------------------------------------------------
+   .\Sim.exe "..\..\macros\mac_matrix_output\group_gamma_D0.100_epixs.mac"
+   ---------------------------------------------------------------------------------
+
+CÁCH 4: CHẠY TỰ ĐỘNG BẰNG POWERSHELL MULTI-THREADING (Tối ưu CPU trên máy trạm)
+   Nếu muốn chạy nhiều worker song song trên máy tính đa nhân, có thể dùng script PowerShell sau:
+   ---------------------------------------------------------------------------------
+   $exe = "C:\antigravity_goat\2026.03.13_Advanced Solid Angle Detector_ver2\code\build\Release\Sim.exe"
+   $macroDir = "C:\antigravity_goat\2026.03.13_Advanced Solid Angle Detector_ver2\code\macros\mac_matrix_output"
+   $outDir = "C:\antigravity_goat\2026.03.13_Advanced Solid Angle Detector_ver2\code\build\Release\results"
+   New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+   Set-Location $outDir
+
+   # Lấy danh sách các macro của một nhóm cụ thể (Ví dụ mẫu CF10):
+   $macros = Get-ChildItem -Path $macroDir -Filter "run_CF10_gamma_*.mac"
+   $maxThreads = 8  # Số luồng song song tùy CPU
+
+   $macros | ForEach-Object -Parallel {
+       $m = $_.FullName
+       $e = $using:exe
+       & $e $m *>$null
+       Write-Host "[DONE] $(Split-Path $m -Leaf)"
+   } -ThrottleLimit $maxThreads
+   ---------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------------------
+4. CÁCH TÁI SINH HOẶC ĐIỀU CHỈNH SỐ LƯỢNG HẠT (generate_full_matrix_macros.py)
+----------------------------------------------------------------------------------------------------
+Nếu cần thay đổi số hạt mô phỏng (/run/beamOn), thêm/bớt mẫu hoặc chỉ chạy riêng một loại bức xạ:
+Cú pháp dòng lệnh:
+   python code\macros\generate_full_matrix_macros.py [options]
+
+Các tham số chính:
+   --mode {all, gamma, neutron} : Chọn loại hạt (Mặc định: all)
+   --beamon <int>                : Số hạt bắn cho mỗi run (Mặc định: 100000)
+   --include-baseline            : Tự động bổ sung bề dày baseline 0.005 cm (Khuyến nghị bật)
+   --sample S0 CF10 CF20 ...     : Chỉ tạo macro cho các mẫu được liệt kê
+   --output-dir <path>           : Thư mục đích lưu macro
+
+Ví dụ:
+   # 1. Sinh lại toàn bộ 18,060 file macro với 200,000 hạt:
+   python generate_full_matrix_macros.py --include-baseline --beamon 200000
+
+   # 2. Chỉ sinh riêng chùm Neutron cho mẫu CF10 và Blank S0:
+   python generate_full_matrix_macros.py --mode neutron --sample S0 CF10 --include-baseline
+
+   # 3. Chỉ sinh riêng chùm Gamma:
+   python generate_full_matrix_macros.py --mode gamma --include-baseline
+
+----------------------------------------------------------------------------------------------------
+5. PHÂN TÍCH KẾT QUẢ VÀ TÍNH TOÁN CÁC ĐẠI LƯỢNG VẬT LÝ VỚI COUNT.CC
+----------------------------------------------------------------------------------------------------
+Sau khi mô phỏng xong và có các file .root:
+1. Mở ROOT C++ phân tích:
+   ---------------------------------------------------------------------------------
+   cd "C:\antigravity_goat\2026.03.13_Advanced Solid Angle Detector_ver2\code\macros"
+   root -l -b -q "Count.cc+(\"..\build\Release\")"
+   ---------------------------------------------------------------------------------
+2. Count.cc sẽ:
+   - Quét toàn bộ file .root định dạng hist_{Sample}_{gamma/neutron}_D{Thick}_E{Energy}.root.
+   - Trích xuất số đếm đỉnh phát xạ toàn phần (Photopeak) hoặc thông lượng xuyên qua (Flux).
+   - Đọc giá trị I0 từ file Blank tương ứng (mẫu S0).
+   - Tính toán trực tiếp hệ số suy giảm khối lượng MAC (cm2/g), hệ số suy giảm tuyến tính LAC (1/cm),
+     chiều dày một nửa HVL (cm), chiều dày một phần mười TVL (cm), và quãng đường tự do trung bình MFP (cm).
+   - Xuất file kết quả tổng hợp: Raw_Merged.csv.
+
+----------------------------------------------------------------------------------------------------
+6. QUY TẮC XỬ LÝ SỐ LIỆU VẬT LÝ QUAN TRỌNG (Rule 5)
+----------------------------------------------------------------------------------------------------
+1. KHÔNG FALLBACK XCOM: Tuyệt đối không lấy dữ liệu lý thuyết XCOM đắp vào khi mẫu mô phỏng bị cản 100%.
+2. KHÔNG DÙNG GIỚI HẠN PHÁT HIỆN 10^-8: Không dùng số 10^-8 để tính MAC vì sai lệch bản chất vật lý.
+3. NGUYÊN TẮC MẪU SIÊU MỎNG (0.005 cm):
+   - Hệ số suy giảm khối lượng (MAC = mu/rho) là thuộc tính nội tại của vật liệu, độc lập với bề dày.
+   - Khi các mẫu dày (0.1 - 0.5 cm) cản toàn bộ chùm hạt (Flux I = 0), bắt buộc trích xuất giá trị MAC
+     tính được từ mẫu siêu mỏng (0.005 cm) của chính vật liệu đó tại cùng mức năng lượng để đại diện.
+4. ZERO NAN / ZERO #DIV/0!:
+   - Mọi kết quả bảng tính bàn giao phải đảm bảo 0 ô lỗi, 0 ô trống.
+====================================================================================================

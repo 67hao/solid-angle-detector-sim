@@ -1,4 +1,4 @@
-﻿// =========================================================================
+// =========================================================================
 // Header Definition
 // =========================================================================
 
@@ -41,13 +41,13 @@ MyRunAction::MyRunAction()
     // ---------------------------------------------------------------------
     // Histogram Definitions
     // ---------------------------------------------------------------------
-    // H1 ID = 0 : Energy deposition spectrum
+    // H1 ID = 0 : Energy deposition spectrum (up to 15 MeV to cover prompt neutron capture gammas & high energy gammas)
     analysisManager->CreateH1(
         "E_dep",
         "Deposited Energy Spectrum in NaI(Tl)",
-        1000,               // bins
+        15000,              // bins (1 keV/bin)
         0.0,
-        3000.0 * keV        // range
+        15000.0 * keV       // range up to 15 MeV
     );
 	// H1 ID = 1 : Pulse count histogram
     analysisManager->CreateH1(

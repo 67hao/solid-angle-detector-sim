@@ -1,0 +1,11 @@
+/control/verbose 0
+/run/verbose 0
+/event/verbose 0
+/tracking/verbose 0
+/DetectorConstruction/Sample_Material S1
+/DetectorConstruction/Sample_Thickness 0.500000 cm
+/DetectorConstruction/update
+/gun/particle neutron
+/gun/energy 50 keV
+/analysis/setFileName hist_S1_neutron_D0p5_E50
+/run/beamOn 1000000
